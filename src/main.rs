@@ -1,11 +1,10 @@
-use actix_web::{App, HttpServer, web};
+use actix_web::{App, HttpServer};
 
 mod get_palette;
 mod error;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!("Hello, world!");
     HttpServer::new(|| {
         App::new().service(get_palette::get_palette)
     })
