@@ -17,8 +17,8 @@ async fn get_palette(stream:web::Bytes) -> Result<impl Responder,GetPaletteRespo
     let colourspace:SimpleColorSpace = SimpleColorSpace::default();
 
     // Read image from request
-    let image_reader = Reader::new(Cursor::new(stream)).with_guessed_format().map_err(|_| GetPaletteResponseError::BadRequest)?;
-    let image = image_reader.decode().map_err(|_| GetPaletteResponseError::BadRequest)?;
+    let image_reader = Reader::new(Cursor::new(stream)).with_guessed_format().map_err(|_|GetPaletteResponseError::BadRequest(1, "Couldn't guess format".to_string()))?;
+    let image = image_reader.decode().map_err(|_| GetPaletteResponseError::BadRequest(2, "Couldn't decode image".to_string()))?;
     
     // Convert to exoquant image
     let exo_image:Histogram = image.pixels()

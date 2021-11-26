@@ -5,14 +5,14 @@ use thiserror::Error;
 
 #[derive(Error,Debug)]
 pub enum GetPaletteResponseError{
-    #[error("{{Bad}}")]
-    BadRequest
+    #[error("{{\"code\":{0}, \"msg\":\"{1}\"}}")]
+    BadRequest(u32,String)
 }
 
 impl error::ResponseError for GetPaletteResponseError{
     fn status_code(&self) -> actix_web::http::StatusCode {
         match *self {
-            GetPaletteResponseError::BadRequest => StatusCode::BAD_REQUEST,
+            GetPaletteResponseError::BadRequest(_,_) => StatusCode::BAD_REQUEST,
         }
     }
 
