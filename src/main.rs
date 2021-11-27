@@ -6,7 +6,8 @@ mod error;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
-        App::new().service(get_palette::get_palette)
+        App::new().app_data(actix_web::web::PayloadConfig::new(1024 * 1024 * 10))
+                  .service(get_palette::get_palette)
     })
     .bind("127.0.0.1:8080")?
     .run()

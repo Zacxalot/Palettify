@@ -36,8 +36,8 @@ async fn get_palette(stream:web::Bytes, params:web::Query<Params>) -> Result<imp
 
     // Read image from request
     let image_reader = Reader::new(Cursor::new(stream)).with_guessed_format().map_err(|_|GetPaletteResponseError::BadRequest(1, "Couldn't guess format".to_string()))?;
-    let image = image_reader.decode().map_err(|_| GetPaletteResponseError::BadRequest(2, "Couldn't decode image".to_string()))?;
-    
+    let image = image_reader.decode().map_err(|_| GetPaletteResponseError::BadRequest(2, "Couldn't decode image".to_string()))?.thumbnail(64,64);
+
     // Convert to exoquant image
     // Set alpha to 255 if use_transparancy is false
     let exo_image:Histogram = image.pixels()
@@ -76,6 +76,8 @@ async fn get_palette(stream:web::Bytes, params:web::Query<Params>) -> Result<imp
     if ignore_transparent{
         frequency.retain(|(col,_)| col.a > 10);
     }
+
+    frequency.sort_by(|(_,freq1),(_,freq2)| freq2.partial_cmp(freq1).unwrap_or(std::cmp::Ordering::Equal));
 
     // Respond with colour palette
     let out_palette = frequency.iter()
