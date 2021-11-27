@@ -19,7 +19,7 @@ struct Params{
     ignore_white:Option<bool>,
     ignore_black:Option<bool>,
     ignore_transparent:Option<bool>,
-    use_transparency:Option<bool>
+    use_alpha:Option<bool>
 }
 
 
@@ -28,11 +28,11 @@ async fn get_palette(stream:web::Bytes, params:web::Query<Params>) -> Result<imp
     let colourspace:SimpleColorSpace = SimpleColorSpace::default();
 
     // Extract parameter values and set defaults
-    let num_colors = params.num_colors.unwrap_or(4).min(256);
+    let num_colors = params.num_colors.unwrap_or(4).min(2048);
     let ignore_white = params.ignore_white.unwrap_or(true);
     let ignore_black = params.ignore_black.unwrap_or(true);
     let ignore_transparent = params.ignore_transparent.unwrap_or(true);
-    let use_transparency = params.use_transparency.unwrap_or(true);
+    let use_alpha = params.use_alpha.unwrap_or(true);
 
     // Read image from request
     let image_reader = Reader::new(Cursor::new(stream)).with_guessed_format().map_err(|_|GetPaletteResponseError::BadRequest(1, "Couldn't guess format".to_string()))?;
@@ -41,7 +41,7 @@ async fn get_palette(stream:web::Bytes, params:web::Query<Params>) -> Result<imp
     // Convert to exoquant image
     // Set alpha to 255 if use_transparancy is false
     let exo_image:Histogram = image.pixels()
-                                   .map(|pixel| Color::new(pixel.2[0],pixel.2[1],pixel.2[2],if use_transparency {pixel.2[3]} else {255}))
+                                   .map(|pixel| Color::new(pixel.2[0],pixel.2[1],pixel.2[2],if use_alpha {pixel.2[3]} else {255}))
                                    .collect();
 
     // Generate palette and colour map
