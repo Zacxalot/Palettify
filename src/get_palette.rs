@@ -9,7 +9,8 @@ use crate::error::GetPaletteResponseError;
 #[derive(Serialize)]
 struct PaletteResponse {
     frequency:usize,
-    color:String
+    color:String,
+    proportion:f32
 }
 
 
@@ -77,11 +78,17 @@ async fn get_palette(stream:web::Bytes, params:web::Query<Params>) -> Result<imp
         frequency.retain(|(col,_)| col.a > 10);
     }
 
+    // Sort by colour frequency
     frequency.sort_by(|(_,freq1),(_,freq2)| freq2.partial_cmp(freq1).unwrap_or(std::cmp::Ordering::Equal));
+
+    // Get the total number of colours so we can calculate proportions in response
+    let frequency_total = frequency.iter().fold(0,|acc,(_,freq)| acc + freq) as f32;
 
     // Respond with colour palette
     let out_palette = frequency.iter()
-                               .map(|(col,freq)| PaletteResponse{color:color_to_string(col),frequency:*freq})
+                               .map(|(col,freq)| PaletteResponse{color:color_to_string(col),
+                                                                              frequency:*freq,
+                                                                              proportion:(*freq as f32)/frequency_total})
                                .collect::<Vec<PaletteResponse>>();
     Ok(HttpResponse::Ok().json(out_palette))
 }
