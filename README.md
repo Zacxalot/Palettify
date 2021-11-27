@@ -58,7 +58,7 @@ The endpoint accepts the following query parameters
 |ignore_transparent|Removes mostly transparent colours from the palette|boolean|True|
 |use_alpha|Determines whether or not alpha values are considered while generating palette|boolean|True|
 
-By default, the max image size for upload is 10MiB. To change this, you must set the env variable `MAX_UPLOAD_SIZE`. `.env` files are supported.
+By default, the max image size for upload is 10MiB. To change this, you must set the env variable `MAX_UPLOAD_SIZE` to the maximum file size you require in kilobytes. `.env` files are supported. This value is hard capped to 100MiB.
 
 The response is an array of json objects with this format:
 - `frequency` - number of occurences the colour has in the image
