@@ -42,7 +42,8 @@ The response from this request would be:
     "frequency": 193,
     "color": "#efdedcff",
     "proportion": 0.08297507
-  }]
+  }
+]
 ```
 This image took 120ms to process.
 
