@@ -1,24 +1,14 @@
-use actix_web::{HttpResponse, HttpResponseBuilder, error, http::{StatusCode, header}};
+use rocket::response::{Responder, Response};
 use thiserror::Error;
 
-
-
-#[derive(Error,Debug)]
-pub enum GetPaletteResponseError{
-    #[error("{{\"code\":{0}, \"msg\":\"{1}\"}}")]
-    BadRequest(u32,String)
+#[derive(Error, Debug)]
+pub enum GetPaletteResponseError {
+    #[error("Bad Request")]
+    BadRequest(u32, String),
 }
 
-impl error::ResponseError for GetPaletteResponseError{
-    fn status_code(&self) -> actix_web::http::StatusCode {
-        match *self {
-            GetPaletteResponseError::BadRequest(_,_) => StatusCode::BAD_REQUEST,
-        }
-    }
-
-    fn error_response(&self) -> HttpResponse {
-        HttpResponseBuilder::new(self.status_code())
-            .insert_header(header::ContentType(mime::APPLICATION_JSON))
-            .body(self.to_string())
+impl<'r> Responder<'r> for GetPaletteResponseError {
+    fn respond_to(self, _request: &rocket::Request) -> rocket::response::Result<'r> {
+        Response::build().raw_status(400, "Bad Request").ok()
     }
 }
