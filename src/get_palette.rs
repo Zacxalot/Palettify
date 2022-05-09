@@ -1,12 +1,11 @@
-use crate::error::GetPaletteResponseError;
 use exoquant::{generate_palette, optimizer, Color, ColorMap, Histogram, SimpleColorSpace};
 use image::{io::Reader, GenericImageView};
-use rocket::post;
-use rocket_contrib::json::Json;
+use rocket::{http::Status, post, response::status, serde::json::Json};
 use serde::Serialize;
 use std::io::Cursor;
 
 #[derive(Serialize)]
+#[serde(crate = "rocket::serde")]
 pub struct PaletteResponse {
     frequency: usize,
     color: String,
@@ -17,14 +16,14 @@ pub struct PaletteResponse {
     "/to-palette?<num_colors>&<ignore_white>&<ignore_black>&<ignore_transparent>&<use_alpha>",
     data = "<stream>"
 )]
-pub fn get_palette(
+pub fn get_palette_of(
     num_colors: Option<usize>,
     ignore_white: Option<bool>,
     ignore_black: Option<bool>,
     ignore_transparent: Option<bool>,
     use_alpha: Option<bool>,
     stream: Vec<u8>,
-) -> Result<Json<Vec<PaletteResponse>>, GetPaletteResponseError> {
+) -> Result<Json<Vec<PaletteResponse>>, status::Custom<String>> {
     let colourspace: SimpleColorSpace = SimpleColorSpace::default();
 
     // Extract parameter values and set defaults
@@ -37,10 +36,10 @@ pub fn get_palette(
     // Read image from request
     let image_reader = Reader::new(Cursor::new(stream))
         .with_guessed_format()
-        .map_err(|_| GetPaletteResponseError::BadRequest(1, "Couldn't guess format".to_string()))?;
+        .map_err(|_| status::Custom(Status::BadRequest, "Couldn't decode image".to_owned()))?;
     let image = image_reader
         .decode()
-        .map_err(|_| GetPaletteResponseError::BadRequest(2, "Couldn't decode image".to_string()))?
+        .map_err(|_| status::Custom(Status::BadRequest, "Couldn't decode image".to_owned()))?
         .thumbnail(64, 64);
 
     // Convert to exoquant image
